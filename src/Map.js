@@ -26,6 +26,7 @@ export default class Map extends Component {
                 'data': map_data
             })
 
+            // Squares
             map.addLayer({
                 'id': 'blenheim_block_fill',
                 'type': 'fill',
@@ -37,6 +38,7 @@ export default class Map extends Component {
                 }
             });
 
+            // Lines between squares
             map.addLayer({
                 'id': 'blenheim_block_border',
                 'type': 'line',
@@ -78,7 +80,11 @@ export default class Map extends Component {
                 hoveredStateId = null;
             });
 
+
+            // Temperature array used for dummy data
             const temps = []
+
+            // For each block, push an empy list and then fill it with randomly changing data
             for (var block = 0; block < 40; block++) {
                 temps.push([]);
                 temps[block].push(Math.floor((Math.random() * 100) + 1));
@@ -95,14 +101,17 @@ export default class Map extends Component {
                 }
             }
 
+            // Set map block temperature property to slider value
             for (var i = 0; i < 40; i++) {
                 map.setFeatureState({ source: 'blenheim_block', id: i + 1 },
                     { temperature: temps[i][document.getElementById('slider').value] });
             }
 
 
+            // Listens for slider change
             document.getElementById('slider').addEventListener('input', function (e){
                 var hour = parseInt(e.target.value, 10);
+                // Changes each block color to match temperature for that selection
                 for (var i = 0; i < 40; i++) {
                     map.setFeatureState({ source: 'blenheim_block', id: i + 1 },
                         { temperature: temps[i][hour] });
