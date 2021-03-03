@@ -26,7 +26,7 @@ export default class Map extends Component {
 
         map.on('load', function () {
 
-           // Add geojson data to map 
+            // Add geojson data to map 
             map.addSource('blenheim_block', {
                 'type': 'geojson',
                 'data': map_data
@@ -89,18 +89,46 @@ export default class Map extends Component {
             // Calls backend api requesting values
             axios.get(`${backend.value}/api/temperature_sensor/`).then(res => {
 
+                const MIN = 77; // min val on dataset (TODO: replace with function)
+                const RANGE = 6; // range of dataset (TODO: replace with function)
+
                 // Sets the initial colors of the blocks based on the initial slider value
-                for (var i = 0; i < 40; i++) {
-                    map.setFeatureState({ source: 'blenheim_block', id: i + 1 },
-                            { temperature: Math.floor(res.data.filter(x => x.sensor == i+1)[document.getElementById('slider').value].temperature )});
+                for (var sensor_id = 1; sensor_id <= 40; sensor_id++) {
+
+                    // Filters data gotten from api call by sensor number. 
+                    var sensor_data = res.data.filter(x => x.sensor == sensor_id);
+
+                    var initial_slider_value = document.getElementById('slider').value;
+
+                    if (sensor_data[initial_slider_value]) { // If data at initial slider value exists
+                        map.setFeatureState({ source: 'blenheim_block', id: sensor_id },
+                            { temperature: (Math.round(sensor_data[initial_slider_value].temperature) - MIN) / RANGE * 100 });
+
+                    } else { // set to null (gray box)
+                        map.setFeatureState({ source: 'blenheim_block', id: sensor_id },
+                            { temperature: null });
+                    }
                 }
 
-                document.getElementById('slider').addEventListener('input', function (e){
+                document.getElementById('slider').addEventListener('input', function (e) {
+
                     // Changes each block color to match temperature for that selection
-                    for (var i = 0; i < 40; i++) {
-                        map.setFeatureState({ source: 'blenheim_block', id: i + 1 },
-                            // Filters data gotten from api call by sensor number. Sets color of block from resulting list based on slider value picked.
-                            { temperature: Math.floor(res.data.filter(x => x.sensor == i+1)[document.getElementById('slider').value].temperature )});
+                    for (var sensor_id = 1; sensor_id <= 40; sensor_id++) {
+
+                        // Filters data gotten from api call by sensor number. 
+                        var sensor_data = res.data.filter(x => x.sensor == sensor_id);
+
+                        var slider_value = e.target.value
+
+                        if (sensor_data[e.target.value]) { // If data at slider value exits
+                            map.setFeatureState({ source: 'blenheim_block', id: sensor_id },
+                                // Sets color of block from resulting list based on slider value picked.
+                                { temperature: (Math.round(sensor_data[slider_value].temperature) - MIN) / RANGE * 100 });
+
+                        } else { // If it doesn't exist, set to null (gray box)
+                            map.setFeatureState({ source: 'blenheim_block', id: sensor_id },
+                                { temperature: null });
+                        }
                     }
                 });
 

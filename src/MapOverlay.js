@@ -9,7 +9,7 @@ export default class MapOverlay extends Component {
                     <h2>Blenheim Block Temperature Over Time</h2>
                     <label id="hour"></label>
                     <div>
-                    <input id="slider" type="range" min="0" max="59" step="1"></input>
+                    <input id="slider" type="range" min="0" max="1500" step="1"></input>
                     </div>
                 </div>
                 <div className="map-overlay-inner">
