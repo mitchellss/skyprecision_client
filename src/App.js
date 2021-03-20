@@ -1,13 +1,9 @@
-import Map from './Map.js';
-import MapOverlay from './MapOverlay.js';
+import Home from './Home';
 import './App.css';
 
 function App() {
   return (
-    <div>
-    <Map/>
-    <MapOverlay/>
-    </div>
+    <Home/>
   );
 }
 
