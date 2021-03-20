@@ -1,0 +1,11 @@
+version: "3.3"
+
+services:
+        client:
+                container_name: react 
+                image: mitchellss/skyprecision:client-vX.X.X
+                build: 
+                        context: .
+                        dockerfile: Dockerfile.prod
+                ports:
+                        - "3000:80"
