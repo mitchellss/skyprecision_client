@@ -1,0 +1,1 @@
+docker run -dit --rm --name "skyprecision_client" -p "3000:80" mitchellss/skyprecision:client-vX.X.X
