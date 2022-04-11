@@ -12,8 +12,8 @@ export default class Home extends Component {
     render() {
         return(
             <div>
-                <Map parent={this} ref={this.mapRef}/>
-                <MapOverlay parent={this} ref={this.overlayRef}/>
+                <Map parent={this} ref={this.mapRef} startTimeInSeconds={100}/>
+                <MapOverlay parent={this} ref={this.overlayRef} />
             </div>
         );
     }

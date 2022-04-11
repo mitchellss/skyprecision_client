@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import mapboxgl from 'mapbox-gl';
-import map_data from './test.geojson';
+import map_data from './xchange.geojson';
 import axios from 'axios';
 import backend from './globals'
 
@@ -9,8 +9,11 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiaXNhYWNqbWlsbGVyIiwiYSI6ImNrMTZ6NnBqdjFiM3czc
 export default class Map extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            seconds: parseInt(props.startTimeInSeconds, 10) || 0,
+            sensorData: {}
+        };
     }
-
 
     componentDidMount() {
 
@@ -18,9 +21,11 @@ export default class Map extends Component {
         var map = new mapboxgl.Map({
             container: this.mapContainer,
             style: 'mapbox://styles/mapbox/satellite-streets-v11',
-            center: [-78.496139, 37.931034],
-            zoom: 16
+            center: [-78.86155385515599, 38.43296183843603],
+            zoom: 19
         });
+        
+        this.interval = setInterval((map) => this.tick(map), 2000);
 
         var hoveredStateId = null;
         const NUM_SENSORS = 40;
@@ -88,6 +93,10 @@ export default class Map extends Component {
                 }
             });
 
+            // map.on("mousedown", function (e) {
+            //     console.log(e.lngLat)
+            // });
+
             // When the mouse leaves the state-fill layer, update the feature state of the
             // previously hovered feature.
             map.on('mouseleave', 'blenheim_block_fill', function () {
@@ -100,89 +109,58 @@ export default class Map extends Component {
                 hoveredStateId = null;
             });
 
-            // Calls backend api requesting values
-            axios.get(`${backend.value}/api/temperature_sensor/live_data/?num=${MIN_IN_HOUR}`).then(res => {
-
-                const MIN = 70; // min val on dataset (TODO: replace with function)
-                const RANGE = 60; // range of dataset (TODO: replace with function)
-
-
-
-                // Sets the initial colors of the blocks based on the initial slider value
-                for (var sensor_id = 1; sensor_id <= NUM_SENSORS; sensor_id++) {
-
-                    // Filters data gotten from api call by sensor number. 
-                    var sensor_data = res.data.filter(x => x.sensor == sensor_id);
-
-                    var initial_slider_value = document.getElementById('slider').value;
-
-                    if (sensor_data[initial_slider_value]) { // If data at initial slider value exists
-                        map.setFeatureState({ source: 'blenheim_block', id: sensor_id },
-                            { temperature: (Math.round(sensor_data[initial_slider_value].temperature) - MIN) / RANGE * 100 });
-
-                    } else { // set to null (gray box)
-                        map.setFeatureState({ source: 'blenheim_block', id: sensor_id },
-                            { temperature: null });
-                    }
-                }
-
-                document.getElementById('slider').addEventListener('input', function (e) {
-
-                    // If data has been recieved
-                    if (res.data.length > 0) {
-                        var recording_time_to_match = parseInt(res.data[0].time) - (SEC_IN_MIN * (59 - e.target.value)); //TODO: change 59 to track max index of slider
-                        var matching_data = res.data.filter(x => parseInt(x.time) == recording_time_to_match);
-
-                        change_date_display(recording_time_to_match);
-
-                        // Sets all blocks to gray before setting color in next step
-                        for (var i = 1; i <= NUM_SENSORS; i++) {
-                            map.setFeatureState({ source: 'blenheim_block', id: i },
-                                // Sets color of block from resulting list based on slider value picked.
-                                { temperature: null });
-                        }
-
-                        matching_data.forEach((item, index) => {
-                            map.setFeatureState({ source: 'blenheim_block', id: item.sensor },
-                                // Sets color of block from resulting list based on slider value picked.
-                                { temperature: (Math.round(item.temperature) - MIN) / RANGE * 100 });
-                        });
-                    }
-
-
-
-                    // Changes each block color to match temperature for that selection
-                    //for (var sensor_id = 1; sensor_id <= NUM_SENSORS; sensor_id++) {
-
-                    //    // Filters data gotten from api call by sensor number. 
-                    //    var sensor_data = res.data.filter(x => x.sensor == sensor_id);
-
-                    //    var slider_value = e.target.value
-
-                    //    if (sensor_data[e.target.value]) { // If data at slider value exits
-                    //        change_date_display(sensor_data[slider_value].time);
-                    //        map.setFeatureState({ source: 'blenheim_block', id: sensor_id },
-                    //            // Sets color of block from resulting list based on slider value picked.
-                    //            { temperature: (Math.round(sensor_data[slider_value].temperature) - MIN) / RANGE * 100 });
-
-                    //    } else { // If it doesn't exist, set to null (gray box)
-                    //        map.setFeatureState({ source: 'blenheim_block', id: sensor_id },
-                    //            { temperature: null });
-                    //    }
-                    //}
-                });
-
-            });
-
         });
 
+    }
 
+    tick(map) {
+        this.setState(state => ({
+          seconds: state.seconds + 1
+        }));
+
+        console.log(map)
+
+        axios.get("http://192.168.43.68:42069").then(res => {
+            
+            var dict = {}
+            var keys = Object.keys(res.data)
+            var vals = Object.values(res.data)
+
+            keys.map((item, index) => {
+                dict[item] = vals[index]
+            })
+
+            // console.log(dict)
+            
+
+            this.setState(() => ({
+                sensorData: dict
+            }));
+        })
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.interval);
+    }
+
+
+    formatTime(secs) {
+        let hours   = Math.floor(secs / 3600);
+        let minutes = Math.floor(secs / 60) % 60;
+        let seconds = secs % 60;
+        return [hours, minutes, seconds]
+            .map(v => ('' + v).padStart(2, '0'))
+            .filter((v,i) => v !== '00' || i > 0)
+            .join(':');
     }
 
     render() {
         return (
             <div>
                 <div ref={el => this.mapContainer = el} className="mapContainer" />
+                {/* <div>
+                    Timer: {this.formatTime(this.state.seconds)}
+                </div>             */}
             </div>
         )
     }
