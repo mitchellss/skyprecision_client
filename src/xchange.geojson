@@ -3,8 +3,10 @@
 	"features": [
 	  {
 		"type": "Feature",
-		"properties": {},
-		"id": 403037224773201139,
+		"properties": {
+			"sensor_id": "address0"
+		},
+		"id": 1,
 		"geometry": {
 		  "type": "Polygon",
 		  "coordinates": [
@@ -35,8 +37,10 @@
 	  },
 	  {
 		"type": "Feature",
-		"properties": {},
-		"id": 406908213773201128,
+		"properties": {
+			"sensor_id": "address1"
+		},
+		"id": 2,
 		"geometry": {
 		  "type": "Polygon",
 		  "coordinates": [
@@ -67,8 +71,10 @@
 	  },
 	  {
 		"type": "Feature",
-		"properties": {},
-		"id": 4015213417077320185,
+		"properties": {
+			"sensor_id": "address2"
+		},
+		"id": 3,
 		"geometry": {
 		  "type": "Polygon",
 		  "coordinates": [
@@ -99,8 +105,10 @@
 	  },
 	  {
 		"type": "Feature",
-		"properties": {},
-		"id": 4016624233773201214,
+		"properties": {
+			"sensor_id": "address3"
+		},
+		"id": 4,
 		"geometry": {
 		  "type": "Polygon",
 		  "coordinates": [
